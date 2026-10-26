@@ -1,5 +1,8 @@
 package com.benitoventas;
 
+import java.util.concurrent.CompletionStage;
+
+import io.smallrye.common.annotation.Blocking;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -22,14 +25,11 @@ public class OrderResource {
         this.orderService = orderService;
     }
 
-    @POST 
+    @POST
+    @Blocking 
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@Valid CreateOrderRequest request){
-        OrderResponse order = orderService.create(request);
-
-        return Response.status(Response.Status.CREATED)
-                .entity(order)
-                .build();
+    public CompletionStage<Response> create(@Valid CreateOrderRequest request){
+        return orderService.create(request).thenApply(order -> Response.status(Response.Status.CREATED).entity(order).build());
     }
 
     @GET 

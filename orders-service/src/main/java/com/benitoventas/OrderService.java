@@ -1,6 +1,8 @@
 package com.benitoventas;
 
 import java.time.Instant;
+import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 
 import org.bson.types.ObjectId;
 
@@ -13,13 +15,15 @@ import jakarta.ws.rs.NotFoundException;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderEventPublisher orderEventPublisher;
 
     @Inject 
-    public OrderService(OrderRepository orderRepository){
+    public OrderService(OrderRepository orderRepository, OrderEventPublisher orderEventPublisher){
         this.orderRepository = orderRepository;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
-    public OrderResponse create(CreateOrderRequest request){
+    public CompletionStage<OrderResponse> create(CreateOrderRequest request){
         Order order = new Order();
         order.customerId = request.customerId();
         order.status = OrderStatus.PENDIENTE;
@@ -39,7 +43,13 @@ public class OrderService {
 
         orderRepository.persist(order);
 
-        return toResponse(order);
+        var items = order.items.stream().map(item -> new OrderCreatedEvent.Item(item.productId, item.quantity)).toList();
+
+        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID().toString(), order.id.toHexString(), order.customerId, items, order.createdAt);
+
+        OrderResponse response = toResponse(order);
+
+        return orderEventPublisher.publish(event).thenApply(ignored -> response);
     }
 
     public OrderResponse findById(String id){
