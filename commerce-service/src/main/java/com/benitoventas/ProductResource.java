@@ -1,5 +1,4 @@
 package com.benitoventas;
-import java.net.URI;
 import java.util.List;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
