@@ -66,6 +66,33 @@ public class OrderService {
         return toResponse(order);
     }
 
+    public void applyResult(OrderProcessedEvent event) {
+        if (event == null
+                || event.orderId() == null
+                || !ObjectId.isValid(event.orderId())
+                || event.eventId() == null
+                || event.eventId().isBlank()
+                || event.processedAt() == null) {
+            throw new IllegalArgumentException("El evento de resultado no tiene los datos requeridos");
+        }
+
+        if (orderRepository.applyResult(event)) {
+            return;
+        }
+
+        var order = orderRepository.findById(new ObjectId(event.orderId()));
+
+        if (order == null) {
+            throw new IllegalStateException("Se recibio un resultado para una orden inexistente");
+        }
+
+        if (event.eventId().equals(order.resultEventId)) {
+            return;
+        }
+
+        throw new IllegalStateException("La orden ya tiene otro resultado final");
+    }
+
     private OrderResponse toResponse(Order order){
         var items = order.items.stream()
                 .map(item -> new OrderResponse.Item(
@@ -78,7 +105,10 @@ public class OrderService {
             order.customerId,
             items,
             order.status,
-            order.createdAt
+            order.createdAt,
+            order.total,
+            order.rejectionReason,
+            order.processedAt
         );
     }
 }

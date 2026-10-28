@@ -1,5 +1,6 @@
 package com.benitoventas;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -8,7 +9,10 @@ public record OrderResponse(
         String customerId,
         List<Item> items,
         OrderStatus status,
-        Instant createdAt
+        Instant createdAt,
+        BigDecimal total,
+        String rejectionReason,
+        Instant processedAt
 ) 
 {
     public record Item(String productId, int quantity){

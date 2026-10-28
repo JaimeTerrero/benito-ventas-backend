@@ -1,5 +1,6 @@
 package com.benitoventas;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.bson.types.ObjectId;
@@ -13,4 +14,8 @@ public class Order {
     public List<OrderItem> items;
     public OrderStatus status;
     public Instant createdAt;
+    public BigDecimal total;
+    public String rejectionReason;
+    public Instant processedAt;
+    public String resultEventId;
 }
