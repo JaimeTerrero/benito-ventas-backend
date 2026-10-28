@@ -1,5 +1,9 @@
 package com.benitoventas;
 
+import java.nio.charset.StandardCharsets;
+
+import io.quarkus.elytron.security.common.BcryptUtil;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -23,11 +27,17 @@ public class CustomerService {
     }
 
     public CustomerResponse create(CreateCustomerRequest request){
+        if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new BadRequestException("La contraseña es demasiada larga");
+        }
+
         var customer = new Customer();
         customer.name = request.name();
         customer.email = request.email().toLowerCase();
         customer.balance = new BigDecimal("0.00");
         customer.createdAt = Instant.now();
+        customer.passwordHash = BcryptUtil.bcryptHash(request.password());
+        customer.role = "CLIENTE";
 
         try {
             customerRepository.persist(customer);

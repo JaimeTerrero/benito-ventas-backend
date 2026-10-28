@@ -12,6 +12,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 @Path("/products")
 @Produces(MediaType.APPLICATION_JSON)
@@ -25,17 +27,20 @@ public class ProductResource {
     }
 
     @GET
+    @PermitAll
     public List<ProductResponse> list(){
         return productService.list();
     }
 
     @GET 
     @Path("/{id}")
+    @PermitAll
     public ProductResponse finById(@PathParam("id") String id){
         return productService.findById(id);
     }
 
     @POST
+    @RolesAllowed("ADMIN")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(@Valid CreateProductRequest request, @Context UriInfo UriInfo){
         ProductResponse product = productService.create(request);

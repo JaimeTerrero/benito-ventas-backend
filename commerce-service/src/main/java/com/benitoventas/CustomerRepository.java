@@ -60,4 +60,8 @@ public class CustomerRepository implements PanacheMongoRepository<Customer> {
 
         return result.getModifiedCount() == 1;
     }
+
+    public Customer findByEmail(String email){
+        return find("email", email).firstResult();
+    }
 }

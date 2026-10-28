@@ -17,4 +17,6 @@ public class Customer {
     public BigDecimal balance;
     public Instant createdAt;
     public List<CustomerDeposit> deposits = new ArrayList<>();
+    public String passwordHash;
+    public String role;
 }
