@@ -11,6 +11,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.ClientSession;
 
 import org.bson.Document;
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
@@ -41,5 +42,22 @@ public class CustomerRepository implements PanacheMongoRepository<Customer> {
             ),
             new FindOneAndUpdateOptions()
                         .returnDocument(ReturnDocument.AFTER));
+    }
+
+    public Customer findById(ClientSession session, ObjectId customerId){
+        return mongoCollection().find(session, Filters.eq("_id", customerId)).first();
+    }
+
+    public boolean debitBalance(ClientSession session, ObjectId customerId, BigDecimal amount){
+        if(amount == null || amount.signum() <= 0){
+            throw new IllegalArgumentException("El monto a descontar debe ser positivo");
+        }
+
+        var result = mongoCollection().updateOne(session, Filters.and(Filters.eq("_id", customerId), 
+                                            Filters.gte("balance", new Decimal128(amount))
+                                        ),
+                                        Updates.inc("balance", new Decimal128(amount.negate())));
+
+        return result.getModifiedCount() == 1;
     }
 }
