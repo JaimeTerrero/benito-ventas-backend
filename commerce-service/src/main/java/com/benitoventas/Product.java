@@ -12,4 +12,5 @@ public class Product {
     public String name;
     public BigDecimal price;
     public int stock;
+    public boolean active = true;
 }

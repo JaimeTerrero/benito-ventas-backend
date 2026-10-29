@@ -6,6 +6,10 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
+import java.util.Locale;
+
+import com.mongodb.client.model.Filters;
 
 import org.bson.types.ObjectId;
 
@@ -32,8 +36,8 @@ public class CustomerService {
         }
 
         var customer = new Customer();
-        customer.name = request.name();
-        customer.email = request.email().toLowerCase();
+        customer.name = request.name().strip();
+        customer.email = request.email().strip().toLowerCase();
         customer.balance = new BigDecimal("0.00");
         customer.createdAt = Instant.now();
         customer.passwordHash = BcryptUtil.bcryptHash(request.password());
@@ -98,6 +102,42 @@ public class CustomerService {
                  
         return toResponse(customer);
     
+    }
+
+    public List<CustomerResponse> list(int page, int size) {
+        if (page < 0 || size < 1 || size > 100) {
+            throw new BadRequestException("La pagina debe ser >= 0 y el tamaño entre 1 y 100");
+        }
+
+        return customerRepository.find(Filters.ne("role", "ADMIN")).page(page, size)
+                .list().stream().map(this::toResponse).toList();
+    }
+
+    public CustomerResponse update(String id, UpdateCustomerRequest request) {
+
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestException("El ID del cliente no tiene un formato valido");
+        }
+
+        try {
+            var customer = customerRepository.updateProfile(new ObjectId(id),
+                    request.name().strip(),
+                    request.email().strip().toLowerCase(Locale.ROOT)
+            );
+
+            if (customer == null) {
+                throw new NotFoundException("Cliente no encontrado");
+            }
+
+            return toResponse(customer);
+
+        } catch (MongoWriteException exception) {
+            if (exception.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
+                throw new WebApplicationException("El correo ya esta registrado", 409);
+            }
+
+            throw exception;
+        }
     }
 
     private CustomerResponse toResponse(Customer customer){

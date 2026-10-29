@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
+import com.mongodb.client.model.Filters;
 
 @ApplicationScoped 
 public class ProductService {
@@ -18,9 +19,7 @@ public class ProductService {
     }
 
     public List<ProductResponse> list() {
-        return productRepository.listAll().stream()
-                .map(this::toResponse)
-                .toList();
+        return productRepository.list(Filters.ne("active", false)).stream().map(this::toResponse).toList();
     }
 
     public ProductResponse findById(String id){
@@ -30,7 +29,7 @@ public class ProductService {
 
         var product = productRepository.findById(new ObjectId(id));
 
-        if (product == null){
+        if (product == null || !product.active){
             throw new NotFoundException("Producto no encontrado");
         }
 
@@ -38,7 +37,7 @@ public class ProductService {
     }
 
     public ProductResponse create(CreateProductRequest request){
-        Product product = new Product();
+        var product = new Product();
         product.name = request.name().strip();
         product.price = request.price();
         product.stock = request.stock();
@@ -46,6 +45,36 @@ public class ProductService {
         productRepository.persist(product);
 
         return toResponse(product);
+    }
+
+    public ProductResponse update(String id, UpdateProductRequest request) {
+
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestException("El ID del producto no tiene un formato valido");
+        }
+
+        var product = productRepository.updateDetails(
+                new ObjectId(id),
+                request.name().strip(),
+                request.price(),
+                request.active()
+        );
+
+        if (product == null) {
+            throw new NotFoundException("Producto no encontrado");
+        }
+
+        return toResponse(product);
+    }
+
+    public void deactivate(String id) {
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestException("El ID del producto no tiene un formato valido");
+        }
+
+        if (!productRepository.deactivate(new ObjectId(id))) {
+            throw new NotFoundException("Producto no encontrado");
+        }
     }
 
     private ProductResponse toResponse(Product product) {

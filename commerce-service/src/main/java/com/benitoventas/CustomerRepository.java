@@ -64,4 +64,13 @@ public class CustomerRepository implements PanacheMongoRepository<Customer> {
     public Customer findByEmail(String email){
         return find("email", email).firstResult();
     }
+
+    public Customer updateProfile(ObjectId customerId, String name, String email) {
+
+        return mongoCollection().findOneAndUpdate(
+                Filters.and(Filters.eq("_id", customerId), Filters.ne("role", "ADMIN")),
+                Updates.combine(Updates.set("name", name), Updates.set("email", email)),
+                new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
+        );
+    }
 }

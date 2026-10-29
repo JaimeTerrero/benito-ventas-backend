@@ -2,6 +2,12 @@ package com.benitoventas;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.QueryParam;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -27,6 +33,14 @@ public class CustomerResource {
         this.customerService = customerService;
         this.jwt = jwt;
     }
+
+    @GET
+    @RolesAllowed("ADMIN")
+    public List<CustomerResponse> list(@QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("20") int size) 
+    {
+        return customerService.list(page, size);
+    }
+
 
     @POST
     @PermitAll
@@ -57,5 +71,14 @@ public class CustomerResource {
         }
 
         return customerService.findById(id);
+    }
+
+    @PUT
+    @Path("/{id}")
+    @RolesAllowed("ADMIN")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CustomerResponse update(@PathParam("id") String id,@NotNull @Valid UpdateCustomerRequest request) 
+    {
+        return customerService.update(id, request);
     }
 }

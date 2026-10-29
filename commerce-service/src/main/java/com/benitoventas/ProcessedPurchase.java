@@ -18,4 +18,5 @@ public class ProcessedPurchase {
     public BigDecimal total;
     public String rejectionReason;
     public Instant processedAt;
+    public boolean resultEventPublished;
 }

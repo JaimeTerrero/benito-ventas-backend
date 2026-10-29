@@ -146,12 +146,11 @@ public class PurchaseService {
         for (var entry : quantities.entrySet()) {
             Product product = productRepository.findById(session, new ObjectId(entry.getKey()));
 
-            if (product == null) {
-                throw new PurchaseRejectedException("Producto no encontrado: " + entry.getKey());
+            if (product == null || !product.active) {
+                throw new PurchaseRejectedException("Producto no encontrado o inactivo: " + entry.getKey());
             }
 
-            if (product.price == null
-                    || product.price.signum() <= 0) {
+            if (product.price == null || product.price.signum() <= 0) {
                 throw new IllegalStateException("El producto almacenado tiene un precio invalido");
             }
 
@@ -182,6 +181,7 @@ public class PurchaseService {
         result.total = total;
         result.rejectionReason = rejectionReason;
         result.processedAt = Instant.now();
+        result.resultEventPublished = false;
 
         processedPurchaseRepository.save(session, result);
 
