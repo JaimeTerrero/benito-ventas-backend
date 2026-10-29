@@ -18,17 +18,18 @@ public class AuthService {
     private final CustomerRepository customerRepository;
     @ConfigProperty(name = "smallrye.jwt.new-token.lifespan")
     long tokenLifespan;
+    private final AdminCertificateGuard certificateGuard;
 
     @Inject
-    public AuthService(CustomerRepository customerRepository){
+    public AuthService(CustomerRepository customerRepository, AdminCertificateGuard certificateGuard){
         this.customerRepository = customerRepository;
+        this.certificateGuard = certificateGuard;
     }
 
     public LoginResponse login(LoginRequest request){
         String email = request.email().strip().toLowerCase(Locale.ROOT);
 
-        if (request.password()
-                .getBytes(StandardCharsets.UTF_8).length > 72) {
+        if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw invalidCredentials();
         }
 
@@ -42,6 +43,10 @@ public class AuthService {
         if (!"CLIENTE".equals(customer.role) && !"ADMIN".equals(customer.role)) 
         {
             throw invalidCredentials();
+        }
+
+        if ("ADMIN".equals(customer.role)) {
+            certificateGuard.requireAdminCertificate();
         }
 
         String token = Jwt.issuer("https://benito-ventas.local")
