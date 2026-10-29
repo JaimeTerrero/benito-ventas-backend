@@ -23,9 +23,9 @@ public class OrderService {
         this.orderEventPublisher = orderEventPublisher;
     }
 
-    public CompletionStage<OrderResponse> create(CreateOrderRequest request){
+    public CompletionStage<OrderResponse> create(CreateOrderRequest request, String customerId){
         Order order = new Order();
-        order.customerId = request.customerId();
+        order.customerId = customerId;
         order.status = OrderStatus.PENDIENTE;
         order.createdAt = Instant.now();
 

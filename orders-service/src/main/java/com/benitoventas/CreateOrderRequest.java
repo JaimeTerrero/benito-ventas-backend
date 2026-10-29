@@ -10,9 +10,6 @@ import jakarta.validation.constraints.Size;
 
 public record CreateOrderRequest(
 
-    @NotBlank 
-    String customerId,
-
     @NotEmpty 
     @Size(max = 100)
     List<@NotNull @Valid OrderItemRequest> items){
