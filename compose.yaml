@@ -1,11 +1,23 @@
 services:
   mongodb:
     image: mongo:8.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    command:
+      - mongod
+      - --replSet
+      - rs0
+      - --bind_ip_all
+      - --tlsMode
+      - requireTLS
+      - --tlsCertificateKeyFile
+      - /certs/mongodb.pem
+      - --tlsCAFile
+      - /certs/ca.crt
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongodb-data:/data/db
+      - ./secrets/tls/mongodb.pem:/certs/mongodb.pem:ro
+      - ./secrets/tls/ca.crt:/certs/ca.crt:ro
 
   kafka:
     image: apache/kafka:4.1.2
@@ -17,11 +29,22 @@ services:
 
       KAFKA_LISTENERS: EXTERNAL://:9092,INTERNAL://:19092,CONTROLLER://:29093
       KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:SSL,INTERNAL:SSL,CONTROLLER:SSL
 
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+
+      KAFKA_SSL_KEYSTORE_TYPE: PKCS12
+      KAFKA_SSL_KEYSTORE_LOCATION: /certs/kafka.p12
+      KAFKA_SSL_KEYSTORE_PASSWORD: local-dev-only
+      KAFKA_SSL_KEY_PASSWORD: local-dev-only
+
+      KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /certs/truststore.p12
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: local-dev-only
+      KAFKA_SSL_CLIENT_AUTH: required
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: HTTPS
 
       CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -29,8 +52,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+
     volumes:
       - kafka-data:/tmp/kraft-combined-logs
+      - ./secrets/tls/kafka.p12:/certs/kafka.p12:ro
+      - ./secrets/tls/truststore.p12:/certs/truststore.p12:ro
+      - ./secrets/tls/kafka-client.properties:/certs/kafka-client.properties:ro
 
 volumes:
   mongodb-data:
