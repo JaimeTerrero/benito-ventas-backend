@@ -2,8 +2,14 @@ package com.benitoventas;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,15 +21,13 @@ import jakarta.ws.rs.NotFoundException;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderEventPublisher orderEventPublisher;
 
     @Inject 
-    public OrderService(OrderRepository orderRepository, OrderEventPublisher orderEventPublisher){
+    public OrderService(OrderRepository orderRepository){
         this.orderRepository = orderRepository;
-        this.orderEventPublisher = orderEventPublisher;
     }
 
-    public CompletionStage<OrderResponse> create(CreateOrderRequest request, String customerId){
+    public OrderResponse create(CreateOrderRequest request, String customerId){
         Order order = new Order();
         order.customerId = customerId;
         order.status = OrderStatus.PENDIENTE;
@@ -41,15 +45,12 @@ public class OrderService {
                         return item;
                     }).toList();
 
+        order.creationEventId = UUID.randomUUID().toString();
+        order.creationEventPublished = false;
+
         orderRepository.persist(order);
 
-        var items = order.items.stream().map(item -> new OrderCreatedEvent.Item(item.productId, item.quantity)).toList();
-
-        OrderCreatedEvent event = new OrderCreatedEvent(UUID.randomUUID().toString(), order.id.toHexString(), order.customerId, items, order.createdAt);
-
-        OrderResponse response = toResponse(order);
-
-        return orderEventPublisher.publish(event).thenApply(ignored -> response);
+        return toResponse(order);
     }
 
     public OrderResponse findById(String id){
@@ -57,7 +58,7 @@ public class OrderService {
             throw new BadRequestException("El ID de la orden no tiene formato válido");
         }
 
-        Order order = orderRepository.findById(new ObjectId(id));
+        var order = orderRepository.findById(new ObjectId(id));
 
         if (order == null){
             throw new NotFoundException("Orden no encontrada");
@@ -93,6 +94,60 @@ public class OrderService {
         throw new IllegalStateException("La orden ya tiene otro resultado final");
     }
 
+    public List<AdminOrderResponse> listForAdmin(String customerId, String status, int page, int size) {
+
+            if (page < 0 || size < 1 || size > 100) {
+                throw new BadRequestException("La pagina debe ser >= 0 y el tamaño entre 1 y 100");
+            }
+
+            List<Bson> filters = new ArrayList<>();
+
+            if (customerId != null && !customerId.isBlank()) {
+                if (!ObjectId.isValid(customerId)) {
+                    throw new BadRequestException("El ID del cliente no tiene un formato valido");
+                }
+
+                filters.add(Filters.eq("customerId", new ObjectId(customerId).toHexString()));
+            }
+
+            if (status != null && !status.isBlank()) {
+                OrderStatus orderStatus;
+
+                try {
+                    orderStatus = OrderStatus.valueOf(status.strip().toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException exception) {
+                    throw new BadRequestException("El estado de la orden no es valido");
+                }
+
+                filters.add(Filters.eq("status", orderStatus.name()));
+            }
+
+            Bson filter = filters.isEmpty() ? new Document() : Filters.and(filters);
+
+            return orderRepository
+                    .find(filter, new Document("createdAt", -1).append("_id", -1))
+                    .page(page, size)
+                    .list()
+                    .stream()
+                    .map(this::toAdminResponse)
+                    .toList();
+        }
+
+        public AdminOrderResponse updateAdminNote(String id, UpdateOrderNoteRequest request, String adminId) {
+
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestException("El ID de la orden no tiene un formato valido");
+        }
+
+        var order = orderRepository.updateAdminNote(new ObjectId(id), request.note().strip(), adminId);
+
+        if (order == null) {
+            throw new NotFoundException("Orden no encontrada");
+        }
+
+        return toAdminResponse(order);
+    }
+
     private OrderResponse toResponse(Order order){
         var items = order.items.stream()
                 .map(item -> new OrderResponse.Item(
@@ -109,6 +164,15 @@ public class OrderService {
             order.total,
             order.rejectionReason,
             order.processedAt
+        );
+    }
+
+    private AdminOrderResponse toAdminResponse(Order order) {
+        return new AdminOrderResponse(
+                toResponse(order),
+                order.adminNote,
+                order.adminNoteUpdatedBy,
+                order.adminNoteUpdatedAt
         );
     }
 }

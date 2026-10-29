@@ -1,10 +1,14 @@
 package com.benitoventas;
 
-import java.util.concurrent.CompletionStage;
+import java.util.List;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import io.smallrye.common.annotation.Blocking;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.QueryParam;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -31,12 +35,22 @@ public class OrderResource {
         this.jwt = jwt;
     }
 
+    @GET
+    @RolesAllowed("ADMIN")
+    public List<AdminOrderResponse> listForAdmin(@QueryParam("customerId") String customerId, @QueryParam("status") String status,
+            @QueryParam("page") @DefaultValue("0") int page, @QueryParam("size") @DefaultValue("20") int size) {
+
+        return orderService.listForAdmin(customerId, status, page, size);
+    }
+
     @POST
     @Blocking
     @RolesAllowed("CLIENTE")
     @Consumes(MediaType.APPLICATION_JSON)
-    public CompletionStage<Response> create(@Valid CreateOrderRequest request){
-        return orderService.create(request, jwt.getSubject()).thenApply(order -> Response.status(Response.Status.CREATED).entity(order).build());
+    public Response create(@NotNull @Valid CreateOrderRequest request){
+        var order = orderService.create(request, jwt.getSubject());
+
+        return Response.status(Response.Status.CREATED).entity(order).build();
     }
 
     @GET 
@@ -53,5 +67,13 @@ public class OrderResource {
         }
 
         return order;
+    }
+
+    @PUT
+    @Path("/{id}/admin-note")
+    @RolesAllowed("ADMIN")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public AdminOrderResponse updateAdminNote(@PathParam("id") String id, @NotNull @Valid UpdateOrderNoteRequest request) {
+        return orderService.updateAdminNote(id, request, jwt.getSubject());
     }
 }

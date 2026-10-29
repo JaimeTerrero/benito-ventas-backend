@@ -18,4 +18,9 @@ public class Order {
     public String rejectionReason;
     public Instant processedAt;
     public String resultEventId;
+    public String adminNote;
+    public String adminNoteUpdatedBy;
+    public Instant adminNoteUpdatedAt;
+    public String creationEventId;
+    public boolean creationEventPublished;
 }
