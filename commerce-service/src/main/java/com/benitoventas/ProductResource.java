@@ -16,6 +16,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.constraints.NotNull;
 
 @Path("/products")
 @Produces(MediaType.APPLICATION_JSON)
@@ -44,7 +45,7 @@ public class ProductResource {
     @POST
     @RolesAllowed("ADMIN")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@Valid CreateProductRequest request, @Context UriInfo UriInfo){
+    public Response create(@NotNull @Valid CreateProductRequest request, @Context UriInfo UriInfo){
         ProductResponse product = productService.create(request);
 
         return Response.status(Response.Status.CREATED)

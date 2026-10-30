@@ -45,7 +45,7 @@ public class CustomerResource {
     @POST
     @PermitAll
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(@Valid CreateCustomerRequest request){
+    public Response create(@NotNull @Valid CreateCustomerRequest request){
         var customer = customerService.create(request);
 
         return Response.status(Response.Status.CREATED).entity(customer).build();
@@ -55,7 +55,7 @@ public class CustomerResource {
     @Path("/{id}/deposits")
     @RolesAllowed("ADMIN")
     @Consumes(MediaType.APPLICATION_JSON)
-    public CustomerResponse deposit(@PathParam("id") String id, @Valid DepositRequest request){
+    public CustomerResponse deposit(@PathParam("id") String id, @NotNull @Valid DepositRequest request){
         return customerService.deposit(id, request);
     }
 
