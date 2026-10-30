@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.dto;
 
 import java.util.List;
 

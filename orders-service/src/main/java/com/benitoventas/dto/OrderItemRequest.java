@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.dto;
 
 import io.smallrye.common.constraint.NotNull;
 import jakarta.validation.constraints.Min;

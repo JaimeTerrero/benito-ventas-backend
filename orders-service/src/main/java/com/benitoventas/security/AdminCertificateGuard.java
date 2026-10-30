@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.security;
 
 import java.security.cert.X509Certificate;
 

@@ -1,4 +1,7 @@
-package com.benitoventas;
+package com.benitoventas.messaging.consumers;
+
+import com.benitoventas.messaging.events.OrderProcessedEvent;
+import com.benitoventas.services.OrderService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.resources;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.security;
 
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;

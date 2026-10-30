@@ -1,4 +1,8 @@
-package com.benitoventas;
+package com.benitoventas.repositories;
+
+import com.benitoventas.entities.Order;
+import com.benitoventas.entities.OrderStatus;
+import com.benitoventas.messaging.events.OrderProcessedEvent;
 
 import java.util.Date;
 

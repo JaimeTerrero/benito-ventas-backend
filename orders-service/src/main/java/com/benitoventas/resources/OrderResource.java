@@ -1,4 +1,10 @@
-package com.benitoventas;
+package com.benitoventas.resources;
+
+import com.benitoventas.dto.AdminOrderResponse;
+import com.benitoventas.dto.CreateOrderRequest;
+import com.benitoventas.dto.OrderResponse;
+import com.benitoventas.dto.UpdateOrderNoteRequest;
+import com.benitoventas.services.OrderService;
 
 import java.util.List;
 

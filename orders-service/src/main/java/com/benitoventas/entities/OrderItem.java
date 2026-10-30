@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.entities;
 
 public class OrderItem {
     public String productId;

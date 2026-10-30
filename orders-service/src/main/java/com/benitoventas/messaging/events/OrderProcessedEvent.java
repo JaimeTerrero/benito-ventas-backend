@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.messaging.events;
 
 import java.math.BigDecimal;
 import java.time.Instant;

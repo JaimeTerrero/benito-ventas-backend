@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.entities;
 
 public enum OrderStatus {
     PENDIENTE,

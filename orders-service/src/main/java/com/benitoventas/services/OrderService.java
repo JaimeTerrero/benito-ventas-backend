@@ -1,4 +1,14 @@
-package com.benitoventas;
+package com.benitoventas.services;
+
+import com.benitoventas.dto.AdminOrderResponse;
+import com.benitoventas.dto.CreateOrderRequest;
+import com.benitoventas.dto.OrderResponse;
+import com.benitoventas.dto.UpdateOrderNoteRequest;
+import com.benitoventas.entities.Order;
+import com.benitoventas.entities.OrderItem;
+import com.benitoventas.entities.OrderStatus;
+import com.benitoventas.messaging.events.OrderProcessedEvent;
+import com.benitoventas.repositories.OrderRepository;
 
 import java.time.Instant;
 import java.util.UUID;

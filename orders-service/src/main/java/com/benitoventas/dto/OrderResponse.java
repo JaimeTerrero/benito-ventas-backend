@@ -1,4 +1,6 @@
-package com.benitoventas;
+package com.benitoventas.dto;
+
+import com.benitoventas.entities.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;

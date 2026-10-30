@@ -1,4 +1,4 @@
-package com.benitoventas;
+package com.benitoventas.messaging.events;
 
 import java.time.Instant;
 import java.util.List;

@@ -1,4 +1,9 @@
-package com.benitoventas;
+package com.benitoventas.messaging.outbox;
+
+import com.benitoventas.entities.Order;
+import com.benitoventas.messaging.events.OrderCreatedEvent;
+import com.benitoventas.messaging.publishers.OrderEventPublisher;
+import com.benitoventas.repositories.OrderRepository;
 
 import java.util.concurrent.TimeUnit;
 

@@ -1,4 +1,6 @@
-package com.benitoventas;
+package com.benitoventas.messaging.publishers;
+
+import com.benitoventas.messaging.events.OrderCreatedEvent;
 
 import java.util.concurrent.CompletionStage;
 
