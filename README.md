@@ -46,7 +46,7 @@ benito-ventas/
 │   └── GenerateTlsCertificates.ps1
 ├── commerce-service/
 ├── orders-service/
-└── secrets/                       # Generado localmente; excluido de Git
+└── secrets/                       
 ```
 
 Dentro de `src/main/java/com/benitoventas`: `resources` contiene endpoints; `services`, lógica de negocio; `repositories`, acceso a datos; `entities`, modelos persistidos; `dto`, peticiones y respuestas; `security`, controles del certificado administrativo; y `messaging`, eventos, consumidores, publicadores, deserializadores y outboxes. Comercio incluye además `bootstrap` y `exceptions`.
