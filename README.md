@@ -378,21 +378,6 @@ Invoke-RestMethod -Uri "$ordersUrl/orders/$($order.id)/admin-note" -Method Put -
 
 Las respuestas administrativas contienen `order`, `adminNote`, `updatedBy` y `updatedAt`. La consulta del cliente no expone estos datos internos.
 
-## Códigos HTTP
-
-| Código | Uso |
-|---|---|
-| 200 | Consulta, login, depósito o edición correcta |
-| 201 | Cliente, producto u orden creado |
-| 204 | Producto desactivado |
-| 400 | Petición inválida o formato de ID incorrecto |
-| 401 | Credenciales incorrectas, JWT ausente, inválido o vencido en un recurso protegido |
-| 403 | Identidad sin permiso, propietario diferente o falta del certificado administrativo |
-| 404 | Recurso no encontrado o producto inactivo |
-| 409 | Correo duplicado o referencia de depósito reutilizada con otro monto |
-
-Los ejemplos de validación no garantizan que todos los errores tengan el mismo formato JSON. Un rechazo por saldo o inventario es un resultado de negocio asíncrono y no un `409` del POST de órdenes.
-
 ## Compilación
 
 Para compilar y empaquetar, desde la raíz:
@@ -421,8 +406,6 @@ docker compose stop
 
 Los volúmenes conservan los datos. Para volver a levantar la infraestructura, usar `docker compose up -d`; no es necesario regenerar claves, reinicializar el replica set ni crear otra vez los temas.
 
-## Límites de esta versión
-
-La configuración incluida corresponde a una demostración local: un broker, un nodo MongoDB, certificados locales y contraseñas conocidas de almacenes. No incluye despliegue de producción, alta disponibilidad, autenticación de usuarios MongoDB ni ACL por tema Kafka. La autenticación por certificado no sustituye esas autorizaciones de infraestructura.
+## Tener en consideración
 
 El inventario inicial se define al crear un producto; la edición permite cambiar nombre, precio y estado activo. La API pública de productos devuelve `id`, `name` y `price`. Los saldos se modifican por depósitos administrativos o compras, y los estados finales de órdenes proceden del procesamiento de eventos. Las notas administrativas no modifican ese resultado.
