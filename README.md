@@ -25,24 +25,6 @@ El proyecto está dividido en dos servicios: `orders-service` recibe las órdene
 
 Los microservicios se ejecutan en la JVM local. Docker Compose levanta MongoDB y Kafka. Las bases `benito_commerce` y `benito_orders` están separadas lógicamente y comparten la instancia local de MongoDB.
 
-```mermaid
-sequenceDiagram
-    participant C as Cliente
-    participant O as orders-service
-    participant K as Kafka
-    participant V as commerce-service
-    C->>O: POST /orders + JWT
-    O-->>C: 201, orden PENDIENTE
-    O->>K: orders-created (outbox)
-    K->>V: Orden creada
-    V->>V: Validar y actualizar saldo/inventario en transacción
-    V->>K: orders-processed (outbox)
-    K->>O: Resultado
-    O->>O: COMPLETADA o RECHAZADA
-    C->>O: GET /orders/{id}
-    O-->>C: Estado actual
-```
-
 El `201` confirma la creación de la orden; el resultado de negocio se consulta después. El precio se obtiene del catálogo al procesar la compra. El cliente envía productos y cantidades, y el propietario se obtiene del JWT.
 
 ### Qué pasa si una operación falla
